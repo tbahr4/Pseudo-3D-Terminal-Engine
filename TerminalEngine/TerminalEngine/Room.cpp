@@ -34,8 +34,12 @@ Room::Room(string roomLayoutPath, int cellSize) {
 	for (int y = 0; y < sizeY; y++) {
 		getline(file, line, '\n');
 
-		for (int x = 0; x < sizeX; x++)
-			roomLayout[x + (y * sizeX)] = int(line[x] - '0');
+		for (int x = 0; x < sizeX; x++) {
+			if (x < line.length())
+				roomLayout[x + (y * sizeX)] = int(line[x] - '0');
+			else
+				roomLayout[x + (y * sizeX)] = 0;
+		}
 	}
 
 	
@@ -92,7 +96,7 @@ int Room::getCellAt(double x, double y) {
 // Updates distance and returns the first collision block type of a ray shot from x,y at given angle
 //
 
-int Room::getFirstCollision(double x, double y, double angle, double& distance) {
+int Room::getFirstCollision(double x, double y, double angle, double& distance, int& collisionFace) {
 	double xf = x;
 	double yf = y;
 	while (!cellExistsAt(xf,yf))
@@ -104,8 +108,38 @@ int Room::getFirstCollision(double x, double y, double angle, double& distance) 
 		if (xf < 0 || yf < 0 || xf >= sizeX * cellSize || yf >= sizeY * cellSize) return -1;
 	}
 
+	collisionFace = getCollisionFace(xf, yf);
 	distance = sqrt(pow(xf - x, 2) + pow(yf - y, 2));
 	return getCellAt(xf,yf);
 }
 
+// Updates xFace and yFace of the block at (xPos,yPos)
+// 0-right, 1-top, 2-left, 3-bottom
+//
+int Room::getCollisionFace(double x, double y) {
+	int cellX = x / cellSize;
+	int cellY = y / cellSize;
+	
+	if (cellX < 0 || cellY < 0 || cellX >= sizeX || cellY >= sizeY) return -1;
+
+	// distance from (0,0) of current block
+	double dx = x - (cellX * cellSize);
+	double dy = y - (cellY * cellSize);
+	//
+	double dx2 = ((cellX + 1) * cellSize) - x;
+	double dy2 = ((cellY + 1) * cellSize) - y;
+
+	// Find closest bound
+	double minVal = min(min(dx, dy), min(dx2, dy2));
+	if (minVal == dx)
+		return 2;
+	else if (minVal == dy)
+		return 1;
+	else if (minVal == dx2)
+		return 0;
+	else if (minVal == dy2)
+		return 3;
+	else
+		return -1;
+}
 

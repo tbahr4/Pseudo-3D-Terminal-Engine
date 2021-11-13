@@ -2,14 +2,16 @@
 
 
 
-Engine::Engine(const string& initialRoomPath, int roomCellSize, color backgroundColor, int backgroundBrightness, double startPosX, double startPosY, double startRotation) {
+Engine::Engine(const string& initialRoomPath, int roomCellSize, color foregroundColor, int foregroundBrightness, color backgroundColor, int backgroundBrightness, double startPosX, double startPosY, double startRotation) {
 	window = new Window();						// Create window
 	this->windowSizeX = window->getWidth();
 	this->windowSizeY = window->getHeight();
+	this->foregroundColor = foregroundColor;
+	this->foregroundBrightness = foregroundBrightness;
 	this->backgroundColor = backgroundColor;
 	this->backgroundBrightness = backgroundBrightness;
 
-	frame = new Frame(windowSizeX, windowSizeY, backgroundColor, backgroundBrightness);		// Init frame
+	frame = new Frame(windowSizeX, windowSizeY, foregroundColor, foregroundBrightness, backgroundColor, backgroundBrightness);		// Init frame
 	room = new Room(initialRoomPath, roomCellSize);					// Generate room
 
 	posX = startPosX;
@@ -66,7 +68,7 @@ void Engine::updateScreenSize() {
 	// Update frame size if resized
 	if (w != windowSizeX || h != windowSizeY) {
 		delete frame;
-		frame = new Frame(windowSizeX, windowSizeY, backgroundColor, backgroundBrightness);		// Init frame
+		frame = new Frame(windowSizeX, windowSizeY, foregroundColor, foregroundBrightness, backgroundColor, backgroundBrightness);		// Init frame
 	}
 }
 
@@ -90,14 +92,18 @@ void Engine::draw2DMap(int cellSize) {
 
 // Fires a ray and draws the collision line
 //
-void Engine::fireRay(double x, double y, double angle, int screenPosition) {
+void Engine::fireRay(double x, double y, double angle, int screenPosition, bool applyPseudoLighting) {
 	if (room->cellExistsAt(x, y)) return;		// Inside object: do not draw
 
 	double distance = -1;
-	int blockValue = room->getFirstCollision(x, y, angle, distance);		// Get first collision and update distance
+	int collisionFace = -1;
+	int blockValue = room->getFirstCollision(x, y, angle, distance, collisionFace);		// Get first collision and update distance
 	
 	// Draw ray if collision occured (distance >= 0)
-	frame->drawPillar(screenPosition, getHeightFromDistance(distance, rotation-angle), getBlockColor(blockValue), getBlockBrightness(blockValue));
+	if (applyPseudoLighting)
+		frame->drawPillar(screenPosition, getHeightFromDistance(distance, rotation - angle), getBlockColor(blockValue), getBrightnessFromFace(collisionFace));
+	else
+		frame->drawPillar(screenPosition, getHeightFromDistance(distance, rotation-angle), getBlockColor(blockValue), getBlockBrightness(blockValue));
 }
 
 // Returns the height of a pillar given the distance
@@ -115,19 +121,19 @@ void Engine::clearFrame() {
 
 // Builds the frame using rays
 //
-void Engine::buildFrame()				
+void Engine::buildFrame(bool applyPseudoLighting)
 {
-	int screenPos = windowSizeX;
-	for (double angle = rotation - (fov / 2); angle <= rotation + (fov / 2); angle += fov / windowSizeX) {
-		fireRay(posX, posY, angle, screenPos--);
+	int screenPos = windowSizeX+1;
+	for (double angle = rotation - (fov / 2); angle <= rotation + (fov / 2); angle += fov / (windowSizeX+2)) {
+		fireRay(posX, posY, -angle, screenPos--, applyPseudoLighting);
 	}
 }
 
 color Engine::getBlockColor(int cellValue) {
 	switch (cellValue)
 	{
-	case 1: return C_RED;
-	case 2: return C_MAGENTA;
+	case 1: return C_RED;				// Basic wall
+	case 2: return C_MAGENTA;			// Door
 	default: return C_BLACK;
 	}
 }
@@ -146,9 +152,9 @@ void Engine::pollInputs() {
 
 	// X-Y movement
 	int y = ((key == key_W) - (key == key_S));
-	int x = ((key == key_A) - (key == key_D));
-	posY += (movementSpeed) * ((x * cos(rotation)) + (y * sin(rotation)));
-	posX += (movementSpeed) * ((y * cos(rotation)) - (x * sin(rotation)));
+	int x = ((key == key_D) - (key == key_A));
+	posY += (movementSpeed) * ((x * cos(-rotation)) + (y * sin(-rotation)));
+	posX += (movementSpeed) * ((y * cos(-rotation)) - (x * sin(-rotation)));
 	
 		
 	// Rotation
@@ -161,3 +167,13 @@ void Engine::pollInputs() {
 		fov -= PI / 16;
 }
 
+int Engine::getBrightnessFromFace(int face) {
+	switch (face)
+	{
+	case 0: return 1;
+	case 1: return 2;
+	case 2: return 3;
+	case 3: return 4;
+	default: return 0;
+	}
+}

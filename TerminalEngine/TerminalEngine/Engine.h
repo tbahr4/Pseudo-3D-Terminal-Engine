@@ -28,6 +28,8 @@ private:
 	Frame* frame;
 	Room* room;
 	Window* window;
+	color foregroundColor;
+	int foregroundBrightness;
 	color backgroundColor;
 	int backgroundBrightness;
 	double posX, posY;
@@ -41,7 +43,7 @@ private:
 	int movementSpeed = 25;
 
 public:
-	Engine(const string& initialRoomPath, int roomCellSize, color backgroundColor, int backgroundBrightness, double startPosX, double startPosY, double startRotation);
+	Engine(const string& initialRoomPath, int roomCellSize, color foregroundColor, int foregroundBrightness, color backgroundColor, int backgroundBrightness, double startPosX, double startPosY, double startRotation);
 
 	void updateScreenSize();		// Used for when window is resized
 
@@ -50,14 +52,15 @@ public:
 	void drawFrame();				// Draws the current frame
 	void clear();					// Clears the console screen
 	void clearFrame();				// Clears the frame for next display
-	void buildFrame();				// Builds the frame using rays
+	void buildFrame(bool applyPseudoLighting);				// Builds the frame using rays
 
 	// Control
 	void pollInputs();
 
 private:
-	void fireRay(double x, double y, double angle, int screenPosition);		// Fires a ray and paints its collision relative to the player
-
+	void fireRay(double x, double y, double angle, int screenPosition, bool applyPseudoLighting);		// Fires a ray and paints its collision relative to the player
+	int getBrightnessFromFace(int face);
+	
 	// Helpers
 	void outputFrame(ostream& output);		// Helper function for drawFrame. Outputs the frame to 'output'
 	int getHeightFromDistance(double distance, double angleFromCenter);		// Returns the height of a pillar given the distance

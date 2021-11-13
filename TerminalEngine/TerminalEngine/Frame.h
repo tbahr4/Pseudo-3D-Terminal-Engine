@@ -46,12 +46,14 @@ class Frame
 private:
 	int sizeX, sizeY;
 	vector<pixel> pixels;
+	color foregroundColor;
 	color backgroundColor;
+	int foregroundBrightness;
 	int backgroundBrightness;
 	
 
 public:
-	Frame(int sizeX, int sizeY, color backgroundColor, int backgroundBrightness);
+	Frame(int sizeX, int sizeY, color foregroundColor, int foregroundBrightness, color backgroundColor, int backgroundBrightness);
 
 	pixel& at(const int& x, const int& y);
 	pixel& operator()(const int& x, const int& y);

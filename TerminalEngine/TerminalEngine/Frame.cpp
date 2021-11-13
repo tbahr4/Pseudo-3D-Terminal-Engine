@@ -2,14 +2,19 @@
 
 
 
-Frame::Frame(int sizeX, int sizeY, color backgroundColor, int backgroundBrightness) {
+Frame::Frame(int sizeX, int sizeY, color foregroundColor, int foregroundBrightness, color backgroundColor, int backgroundBrightness) {
 	this->sizeX = sizeX;
 	this->sizeY = sizeY;
+	this->foregroundColor = foregroundColor;
 	this->backgroundColor = backgroundColor;
+	this->foregroundBrightness = foregroundBrightness;
 	this->backgroundBrightness = backgroundBrightness;
 
-	for (int i = 0; i < (sizeX * sizeY); i++)
+	int i = 0;
+	for (; i < (sizeX * sizeY / 2); i++)
 		pixels.push_back(pixel{ backgroundColor, backgroundBrightness });
+	for (; i < (sizeX * sizeY); i++)
+		pixels.push_back(pixel{ foregroundColor, foregroundBrightness });
 }
 
 
@@ -54,7 +59,11 @@ void Frame::drawPillar(int x, int length, color color, int brightness) {
 }
 
 void Frame::clear() {
-	for (int y = 0; y < sizeY; y++)
+	int y = 0;
+	for (; y < sizeY/2; y++)
 		for (int x = 0; x < sizeX; x++)
 			setColor(x, y, backgroundColor, backgroundBrightness);
+	for (; y < sizeY; y++)
+		for (int x = 0; x < sizeX; x++)
+			setColor(x, y, foregroundColor, foregroundBrightness);
 }

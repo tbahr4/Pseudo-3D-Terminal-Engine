@@ -17,7 +17,7 @@ int main() {
 	cin.ignore();		// wait for resize
 
 	
-	Engine engine("rooms/rm_1.txt", 64, C_BLUE, 1, 3*64+32, 3*64+32, 0);
+	Engine engine("rooms/rm_1.txt", 64, C_YELLOW, 2, C_BLUE, 1, 3*64+32, 3*64+32, 0);
 
 	
 	auto start = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
@@ -25,15 +25,15 @@ int main() {
 	
 	while (1) {
 		now = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
-		if (now > start + 1000/60) {
-			engine.buildFrame();
+		if (now > start + 1000/600) {
+			engine.buildFrame(true);
 			engine.drawFrame();
 			engine.clearFrame();
 			engine.pollInputs();
 			start = now;		// Reset timer
 		}
 
-		//while (1) cout << _getch() << endl;
+		
 
 
 

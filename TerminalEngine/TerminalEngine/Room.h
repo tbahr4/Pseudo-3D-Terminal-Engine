@@ -30,8 +30,9 @@ public:
 
 	// Raytracing
 	bool cellExistsAt(double x, double y);
-	int getFirstCollision(double x, double y, double angle, double& distance);		// Updates distance and returns the first collision block type
+	int getFirstCollision(double x, double y, double angle, double& distance, int& collisionFace);		// Updates distance and returns the first collision block type; also updates the face of the collision
 	int getCellAt(double x, double y);
+	int getCollisionFace(double x, double y);			// returns the face of the block collided at (xPos,yPos)	
 	
 };
 
