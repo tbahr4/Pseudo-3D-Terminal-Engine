@@ -2,6 +2,7 @@
 
 
 
+
 Frame::Frame(int sizeX, int sizeY, color foregroundColor, int foregroundBrightness, color backgroundColor, int backgroundBrightness) {
 	this->sizeX = sizeX;
 	this->sizeY = sizeY;
@@ -44,7 +45,7 @@ void Frame::drawRect(int x1, int y1, int x2, int y2, color color, int brightness
 
 // Draws a pillar centered on y
 //
-void Frame::drawPillar(int x, int length, color color, int brightness) {
+void Frame::drawPillar(int x, int length, int blockType, color color, int brightness) {
 	if (length % 2 != sizeY % 2) length++;	// length should match the even/odd property of window size
 	if (length >= sizeY) {	// out of bounds
 		length = sizeY;									// adjust length
@@ -52,9 +53,16 @@ void Frame::drawPillar(int x, int length, color color, int brightness) {
 	}
 	
 	int yStart = sizeY / 2;
-	for (int y = 0; y < length / 2; y++) {
+	int y = 0;
+	for (; y < length / 2; y++) {
 		setColor(x, yStart + y, color, brightness);
 		setColor(x, yStart - y , color, brightness);
+	}
+
+	if (blockType == block_wall_tall) {
+		// Draw stacked wall
+		for (; y < (3 * length / 2); y++)
+			setColor(x, yStart - y, color, brightness);
 	}
 }
 

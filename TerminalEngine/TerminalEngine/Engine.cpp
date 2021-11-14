@@ -32,6 +32,11 @@ void Engine::drawFrame() {
 		outputFrame(ss);
 		string s = ss.str();
 		cout << s << '\r';
+		//system(string("echo " + s).c_str());
+		//ofstream file;
+		//file.open("out.txt");
+		//file << s;
+		//file.close();
 		
 	} else {
 		outputFrame(cout);
@@ -97,13 +102,18 @@ void Engine::fireRay(double x, double y, double angle, int screenPosition, bool 
 
 	double distance = -1;
 	int collisionFace = -1;
-	int blockValue = room->getFirstCollision(x, y, angle, distance, collisionFace);		// Get first collision and update distance
+	double colX, colY;
+	int blockType = room->getFirstCollision(x, y, angle, colX, colY, distance, collisionFace, false);		// Get first collision and update distance
+
+	// Brightness
+	int brightness;
+	if (applyPseudoLighting)
+		brightness = getBrightnessFromFace(collisionFace);
+	else
+		brightness = getBlockBrightness(blockType);
 	
 	// Draw ray if collision occured (distance >= 0)
-	if (applyPseudoLighting)
-		frame->drawPillar(screenPosition, getHeightFromDistance(distance, rotation - angle), getBlockColor(blockValue), getBrightnessFromFace(collisionFace));
-	else
-		frame->drawPillar(screenPosition, getHeightFromDistance(distance, rotation-angle), getBlockColor(blockValue), getBlockBrightness(blockValue));
+	frame->drawPillar(screenPosition, getHeightFromDistance(distance, rotation - angle), blockType, getBlockColor(blockType), brightness);
 }
 
 // Returns the height of a pillar given the distance
@@ -129,44 +139,6 @@ void Engine::buildFrame(bool applyPseudoLighting)
 	}
 }
 
-color Engine::getBlockColor(int cellValue) {
-	switch (cellValue)
-	{
-	case 1: return C_RED;				// Basic wall
-	case 2: return C_MAGENTA;			// Door
-	default: return C_BLACK;
-	}
-}
-
-int Engine::getBlockBrightness(int cellValue) {
-	switch (cellValue)
-	{
-	case 1: return 4;
-	case 2: return 2;
-	default: return 0;
-	}
-}
-
-void Engine::pollInputs() {
-	int key = _getch();
-
-	// X-Y movement
-	int y = ((key == key_W) - (key == key_S));
-	int x = ((key == key_D) - (key == key_A));
-	posY += (movementSpeed) * ((x * cos(-rotation)) + (y * sin(-rotation)));
-	posX += (movementSpeed) * ((y * cos(-rotation)) - (x * sin(-rotation)));
-	
-		
-	// Rotation
-	rotation += rotationSpeed * ((key == key_rotateLeft) - (key == key_rotateRight));
-
-	// FOV
-	if (key == key_debug_fov_plus)
-		fov += PI / 16;
-	else if (key == key_debug_fov_minus)
-		fov -= PI / 16;
-}
-
 int Engine::getBrightnessFromFace(int face) {
 	switch (face)
 	{
@@ -177,3 +149,75 @@ int Engine::getBrightnessFromFace(int face) {
 	default: return 0;
 	}
 }
+
+void Engine::pollInputs() {
+	int key = _getch();
+
+	// X-Y movement
+	int y = ((key == key_W) - (key == key_S));
+	int x = ((key == key_D) - (key == key_A));
+
+	// Check for collision
+	posY += (movementSpeed) * (x*cos(-rotation) + y*sin(-rotation));
+	posX -= (movementSpeed) * (x*sin(-rotation) - y*cos(-rotation));
+	
+		
+	// Rotation
+	rotation += rotationSpeed * ((key == key_rotateLeft) - (key == key_rotateRight));
+
+	// FOV
+	if (key == key_debug_fov_plus)
+		fov += PI / 16;
+	else if (key == key_debug_fov_minus)
+		fov -= PI / 16;
+
+	// Door Interact
+	if (key == key_interact)
+	{
+		double distance = -1;
+		int collisionFace = -1;
+		double colX = 0, colY = 0;
+		int blockValue = room->getFirstCollision(posX, posY, -rotation, colX, colY, distance, collisionFace, true);		// Get first collision and update distance
+
+		// Update cell
+		if ((colX != 0 || colY != 0) && distance <= reachDistance)
+			if (room->getCellAt(colX, colY) == block_door_closed)
+				room->cellAt(colX, colY) = block_empty;			// Open door
+	}
+}
+
+
+color Engine::getBlockColor(int cellValue) {
+	switch (cellValue)
+	{
+	case block_empty: return C_BLACK;				
+	case block_wall: return C_RED;					
+	case block_door_closed: return C_MAGENTA;
+	case block_wall_tall: return C_RED;
+	default: return C_BLACK;
+	}
+}
+
+int Engine::getBlockBrightness(int cellValue) {
+	switch (cellValue)
+	{
+	case block_empty: return 0;
+	case block_wall: return 4;
+	case block_door_closed: return 2;
+	case block_wall_tall: return 4;
+	default: return 0;
+	}
+}
+
+bool Engine::getBlockSolid(int cellValue) {
+	switch (cellValue)
+	{
+	case block_empty: return false;
+	case block_wall: return true;
+	case block_door_closed: return true;
+	case block_wall_tall: return true;
+	default: return false;
+	}
+}
+
+

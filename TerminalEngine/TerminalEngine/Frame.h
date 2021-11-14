@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "Room.h"
+
 using namespace std;
 
 
@@ -60,7 +62,7 @@ public:
 	void setColor(int x, int y, color color, int brightness);
 
 	void drawRect(int x1, int y1, int x2, int y2, color color, int brightness);		// Draws a rectangle from (x1,y1) to (x2,y2)
-	void drawPillar(int x, int length, color color, int brightness);				// Draws a pillar centered on y
+	void drawPillar(int x, int length, int blockType, color color, int brightness);				// Draws a pillar centered on y
 	void clear();		// Resets the frame to default colors
 };
 

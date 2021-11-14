@@ -34,7 +34,7 @@ Room::Room(string roomLayoutPath, int cellSize) {
 	for (int y = 0; y < sizeY; y++) {
 		getline(file, line, '\n');
 
-		for (int x = 0; x < sizeX; x++) {
+		for (string::size_type x = 0; x < string::size_type(sizeX); x++) {
 			if (x < line.length())
 				roomLayout[x + (y * sizeX)] = int(line[x] - '0');
 			else
@@ -92,14 +92,19 @@ int Room::getCellAt(double x, double y) {
 	return at(int(x / cellSize), int(y / cellSize));
 }
 
+int& Room::cellAt(double x, double y) {
+	if (x < 0 || y < 0 || x >= sizeX * cellSize || y >= sizeY * cellSize) throw out_of_range("cellAt: out_of_range");
+	return at(int(x / cellSize), int(y / cellSize));
+}
+
 
 // Updates distance and returns the first collision block type of a ray shot from x,y at given angle
 //
 
-int Room::getFirstCollision(double x, double y, double angle, double& distance, int& collisionFace) {
+int Room::getFirstCollision(double x, double y, double angle, double& collisionX, double& collisionY, double& distance, int& collisionFace, bool findDoors) {
 	double xf = x;
 	double yf = y;
-	while (!cellExistsAt(xf,yf))
+	while (!cellExistsAt(xf, yf))
 	{
 		xf += cos(angle) * 0.1;
 		yf += sin(angle) * 0.1;
@@ -108,8 +113,12 @@ int Room::getFirstCollision(double x, double y, double angle, double& distance, 
 		if (xf < 0 || yf < 0 || xf >= sizeX * cellSize || yf >= sizeY * cellSize) return -1;
 	}
 
+	// Update reference values
+	collisionX = xf;
+	collisionY = yf;
 	collisionFace = getCollisionFace(xf, yf);
 	distance = sqrt(pow(xf - x, 2) + pow(yf - y, 2));
+	
 	return getCellAt(xf,yf);
 }
 
@@ -117,8 +126,8 @@ int Room::getFirstCollision(double x, double y, double angle, double& distance, 
 // 0-right, 1-top, 2-left, 3-bottom
 //
 int Room::getCollisionFace(double x, double y) {
-	int cellX = x / cellSize;
-	int cellY = y / cellSize;
+	int cellX = int(x / cellSize);
+	int cellY = int(y / cellSize);
 	
 	if (cellX < 0 || cellY < 0 || cellX >= sizeX || cellY >= sizeY) return -1;
 

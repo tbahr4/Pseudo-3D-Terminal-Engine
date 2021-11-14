@@ -17,6 +17,7 @@
 #define key_rotateRight 112
 #define key_debug_fov_minus 110		// FOV
 #define key_debug_fov_plus 109
+#define key_interact 102
 
 
 
@@ -41,6 +42,7 @@ private:
 	int cubeSize = 80;
 	double rotationSpeed = PI / 16;
 	int movementSpeed = 25;
+	double reachDistance = 100;
 
 public:
 	Engine(const string& initialRoomPath, int roomCellSize, color foregroundColor, int foregroundBrightness, color backgroundColor, int backgroundBrightness, double startPosX, double startPosY, double startRotation);
@@ -66,6 +68,7 @@ private:
 	int getHeightFromDistance(double distance, double angleFromCenter);		// Returns the height of a pillar given the distance
 	color getBlockColor(int cellValue);
 	int getBlockBrightness(int cellValue);
+	bool getBlockSolid(int cellValue);
 
 };
 
