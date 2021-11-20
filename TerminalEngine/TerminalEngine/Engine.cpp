@@ -32,11 +32,6 @@ void Engine::drawFrame() {
 		outputFrame(ss);
 		string s = ss.str();
 		cout << s << '\r';
-		//system(string("echo " + s).c_str());
-		//ofstream file;
-		//file.open("out.txt");
-		//file << s;
-		//file.close();
 		
 	} else {
 		outputFrame(cout);
