@@ -6,6 +6,7 @@ Allows the user to provide keyboard input for movement, camera rotation, and int
 
 Features a customizable color palette, background, and brightness of the voxels to simulate shadow-casting.
 ![colors](images/colors.png)
+![absence of color](images/colors2.png)
 
 Supports 2-dimensional rooms of any size while providing a scalable field of view and straightforward customization.
 ![default](images/fov.png)
